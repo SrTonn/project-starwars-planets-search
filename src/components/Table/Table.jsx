@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import Context from '../../Context/Context';
+import removeUnderline from '../../helpers/formatText';
 
 export default function Table() {
   const { planets } = useContext(Context);
@@ -10,7 +11,7 @@ export default function Table() {
         <tr>
           {planets.length > 0 && Object.keys(planets[0]).map((th) => {
             if (th === 'residents') return;
-            return <th key={ th }>{th}</th>;
+            return <th key={ th }>{removeUnderline(th)}</th>;
           })}
         </tr>
       </thead>
