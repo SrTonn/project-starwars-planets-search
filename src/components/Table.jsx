@@ -1,21 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import Context from '../Context/Context';
 
 export default function Table() {
   const { planets } = useContext(Context);
-  const [tableHeadList, setTabletHeadList] = useState([]);
-
-  useEffect(() => {
-    if (planets.length > 0) {
-      setTabletHeadList(Object.keys(planets[0]));
-    }
-  }, [planets]);
 
   return (
     <table>
       <thead>
         <tr>
-          {tableHeadList.map((th) => {
+          {planets.length > 0 && Object.keys(planets[0]).map((th) => {
             if (th === 'residents') return;
             return <th key={ th }>{th}</th>;
           })}
