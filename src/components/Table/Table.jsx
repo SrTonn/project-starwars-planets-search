@@ -3,7 +3,7 @@ import Context from '../../Context/Context';
 import removeUnderline from '../../helpers/formatText';
 
 export default function Table() {
-  const { planets } = useContext(Context);
+  const { planets, filteredPlanets } = useContext(Context);
 
   return (
     <table>
@@ -16,7 +16,7 @@ export default function Table() {
         </tr>
       </thead>
       <tbody>
-        {planets.map((obj) => (
+        {filteredPlanets.map((obj) => (
           <tr key={ obj.name }>
             <td>{obj.name}</td>
             <td>{obj.rotation_period}</td>

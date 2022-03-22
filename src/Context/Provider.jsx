@@ -26,7 +26,8 @@ export default function Provider({ children }) {
   };
 
   const context = {
-    planets: filteredPlanets,
+    planets,
+    filteredPlanets,
     handleChange,
   };
 
