@@ -2,19 +2,47 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Context from './Context';
 
+const INITIAL_FILTER_BY_NAME = {
+  filterByName: {
+    name: '',
+  },
+};
+
+const INITIAL_FILTER_BY_NUMERIC_VALUES = {
+  filterByNumericValues: [
+  ],
+};
+
+const INITIAL_ORDER = {
+  order: {
+    column: 'population',
+    sort: 'ASC',
+  },
+};
+
+const INITIAL_OPTIONS_COLUMN_FILTER = [
+  'population',
+  'orbital_period',
+  'diameter',
+  'rotation_period',
+  'surface_water',
+];
+
 export default function Provider({ children }) {
   const [planets, setPlanets] = useState([]);
+  const [filters, setFilters] = useState({
+    ...INITIAL_FILTER_BY_NAME,
+    ...INITIAL_FILTER_BY_NUMERIC_VALUES,
+    ...INITIAL_ORDER,
+  });
+
   const [filteredPlanets, setFilteredPlanets] = useState([]);
   const [columnFilter, setColumnFilter] = useState(null);
   const [comparisonFilter, setComparisonFilter] = useState(null);
   const [inputValue, setInputValue] = useState(0);
-  const [optionsColumnFilter, setOptionsColumnFilter] = useState([
-    'population',
-    'orbital_period',
-    'diameter',
-    'rotation_period',
-    'surface_water',
-  ]);
+  const [optionsColumnFilter, setOptionsColumnFilter] = useState(
+    INITIAL_OPTIONS_COLUMN_FILTER,
+  );
 
   const optionsComparisonFilter = [
     'maior que',
@@ -31,13 +59,45 @@ export default function Provider({ children }) {
     })();
   }, []);
 
+  useEffect(() => {
+    const valueName = filters.filterByName.name.toLowerCase();
+    setFilteredPlanets(planets
+      .filter(({ name }) => name.toLowerCase().includes(valueName)));
+
+    if (filters.filterByNumericValues.length > 0) {
+      filters.filterByNumericValues.forEach((elements) => {
+        setFilteredPlanets((prevState) => {
+          const temp = prevState.filter((obj) => {
+            const { comparison, value: numericValue, column } = elements;
+            if (comparison === 'maior que') return +obj[column] > +numericValue;
+            if (comparison === 'menor que') return +obj[column] < +numericValue;
+            return numericValue === obj[column];
+          });
+          return [...temp];
+        });
+      });
+    }
+  }, [filters, planets]);
+
+  useEffect(() => {
+    const columnsUsed = filters.filterByNumericValues.map((element) => element.column);
+    setOptionsColumnFilter((columns) => columns
+      .filter((column) => !columnsUsed.includes(column)));
+  }, [filters.filterByNumericValues]);
+
   const handleChange = ({ target }) => {
     const { value } = target;
 
     if (value) {
-      setFilteredPlanets(planets.filter(({ name }) => name.includes(value)));
+      setFilters((prevState) => ({
+        ...prevState,
+        filterByName: { name: value },
+      }));
     } else {
-      setFilteredPlanets(planets);
+      setFilters((prevState) => ({
+        ...prevState,
+        filterByName: { name: '' },
+      }));
     }
   };
 
@@ -47,19 +107,19 @@ export default function Provider({ children }) {
   };
 
   const handleClick = () => {
-    console.clear();
-    console.log('columnFilter=>', columnFilter); // population
-    console.log('comparisonFilter=>', comparisonFilter); // maior_que
-    console.log('inputValue=>', inputValue); // 500
-
-    setFilteredPlanets((prevState) => prevState.filter((obj) => {
-      if (comparisonFilter === 'maior que') return +obj[columnFilter] > +inputValue;
-      if (comparisonFilter === 'menor que') return +obj[columnFilter] < +inputValue;
-      if (comparisonFilter === 'igual a') return inputValue === obj[columnFilter];
-      return false;
+    setFilters((prevState) => ({
+      ...prevState,
+      filterByNumericValues: [
+        ...prevState.filterByNumericValues,
+        {
+          column: columnFilter,
+          comparison: comparisonFilter,
+          value: inputValue,
+        },
+      ],
     }));
-    setOptionsColumnFilter((columns) => columns
-      .filter((column) => column !== columnFilter));
+
+    if (optionsColumnFilter[1]) setColumnFilter(optionsColumnFilter[1]);
   };
 
   const context = {
@@ -72,6 +132,7 @@ export default function Provider({ children }) {
     inputValue,
     optionsColumnFilter,
     optionsComparisonFilter,
+    filters,
   };
 
   return (
