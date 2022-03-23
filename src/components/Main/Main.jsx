@@ -13,6 +13,8 @@ export default function Main() {
     optionsComparisonFilter,
     handleClickRemoveFilter,
     filterByNumericValues,
+    INITIAL_OPTIONS_COLUMN_FILTER,
+    selectOrder,
   } = useContext(Context);
 
   return (
@@ -55,6 +57,47 @@ export default function Main() {
           data-testid="button-remove-filters"
         >
           REMOVER FILTROS
+        </button>
+        <Select
+          name="order-planets"
+          options={ INITIAL_OPTIONS_COLUMN_FILTER }
+          dataTestId="column-sort"
+        />
+
+        <div>
+          <label htmlFor="asc">
+            Ascendente
+            <input
+              type="radio"
+              id="asc"
+              name="sort"
+              onChange={ (e) => handleChange(e) }
+              value="ASC"
+              checked={ selectOrder === 'ASC' }
+              data-testid="column-sort-input-asc"
+            />
+          </label>
+          <label htmlFor="desc">
+            Descendente
+            <input
+              type="radio"
+              id="desc"
+              name="sort"
+              onChange={ (e) => handleChange(e) }
+              value="DESC"
+              checked={ selectOrder === 'DESC' }
+              data-testid="column-sort-input-desc"
+            />
+          </label>
+        </div>
+
+        <button
+          name="sort-planets"
+          type="button"
+          onClick={ (e) => handleClick(e) }
+          data-testid="column-sort-button"
+        >
+          ORDENAR
         </button>
       </div>
 

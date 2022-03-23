@@ -20,7 +20,14 @@ export default function Table() {
         {filteredPlanets.map((obj) => (
           <tr key={ obj.name }>
             {Object.keys(planets[0])
-              .map((content) => (<td key={ uid() }>{obj[content]}</td>))}
+              .map((content) => (
+                <td
+                  key={ uid() }
+                  data-testid={ content === 'name' ? 'planet-name' : null }
+                >
+                  {obj[content]}
+                </td>
+              ))}
           </tr>
         ))}
       </tbody>

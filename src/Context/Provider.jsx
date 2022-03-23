@@ -40,6 +40,8 @@ export default function Provider({ children }) {
   const [columnFilter, setColumnFilter] = useState(null);
   const [comparisonFilter, setComparisonFilter] = useState(null);
   const [inputValue, setInputValue] = useState(0);
+  const [selectOrderColumn, setSelectOrderColumn] = useState(null);
+  const [selectOrder, setSelectOrder] = useState('ASC');
   const [optionsColumnFilter, setOptionsColumnFilter] = useState(
     INITIAL_OPTIONS_COLUMN_FILTER,
   );
@@ -54,6 +56,7 @@ export default function Provider({ children }) {
     (async () => {
       const data = await fetch('https://swapi-trybe.herokuapp.com/api/planets/');
       const { results } = await data.json();
+      results.sort((a, b) => a.name.localeCompare(b.name));
       setPlanets(results);
       setFilteredPlanets(results);
     })();
@@ -85,10 +88,30 @@ export default function Provider({ children }) {
       .filter((column) => !columnsUsed.includes(column)));
   }, [filters.filterByNumericValues]);
 
-  const handleChange = ({ target }) => {
-    const { value } = target;
+  useEffect(() => {
+    const { column, sort } = filters.order;
+    setFilteredPlanets((prevState) => {
+      if (prevState.length === 0) return prevState;
+      const sorted = prevState.sort((a, b) => (
+        sort === 'ASC'
+          ? a[column].localeCompare(b[column], 'en', { numeric: true })
+          : b[column].localeCompare(a[column], 'en', { numeric: true })
+      ));
+      console.log('el=>', sorted[0][column]);
+      console.log('isNaN=>', Number.isNaN(Number(sorted[0][column])));
+      while (Number.isNaN(Number(sorted[0][column]))) {
+        sorted.push(sorted.shift());
+      }
+      return sorted;
+    });
+  }, [filters.order]);
+  // Ref.: https://stackoverflow.com/questions/4340227/sort-mixed-alpha-numeric-array
+  // Ref².: https://stackoverflow.com/questions/24909371/move-item-in-array-to-last-position
 
-    if (value) {
+  const handleChange = ({ target: { value, name } }) => {
+    if (name === 'sort') {
+      setSelectOrder(value);
+    } else if (value) {
       setFilters((prevState) => ({
         ...prevState,
         filterByName: { name: value },
@@ -104,22 +127,33 @@ export default function Provider({ children }) {
   const handleSelect = ({ target: { name, value } }) => {
     if (name === 'ColumnFilter') setColumnFilter(value);
     if (name === 'ComparisonFilter') setComparisonFilter(value);
+    if (name === 'order-planets') setSelectOrderColumn(value);
   };
 
   const handleClick = ({ target: { name } }) => {
-    setFilters((prevState) => ({
-      ...prevState,
-      filterByNumericValues: name === 'remove-filters' ? [] : [
-        ...prevState.filterByNumericValues,
-        {
-          column: columnFilter,
-          comparison: comparisonFilter,
-          value: inputValue,
+    if (name === 'sort-planets') {
+      setFilters((prevState) => ({
+        ...prevState,
+        order: {
+          column: selectOrderColumn,
+          sort: selectOrder,
         },
-      ],
-    }));
+      }));
+    } else {
+      setFilters((prevState) => ({
+        ...prevState,
+        filterByNumericValues: name === 'remove-filters' ? [] : [
+          ...prevState.filterByNumericValues,
+          {
+            column: columnFilter,
+            comparison: comparisonFilter,
+            value: inputValue,
+          },
+        ],
+      }));
 
-    if (optionsColumnFilter[1]) setColumnFilter(optionsColumnFilter[1]);
+      if (optionsColumnFilter[1]) setColumnFilter(optionsColumnFilter[1]);
+    }
   };
 
   const handleClickRemoveFilter = ({ name }) => {
@@ -144,6 +178,8 @@ export default function Provider({ children }) {
     filters, // remover antes do push
     handleClickRemoveFilter,
     filterByNumericValues: filters.filterByNumericValues,
+    INITIAL_OPTIONS_COLUMN_FILTER,
+    selectOrder,
   };
 
   return (
