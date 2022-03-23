@@ -106,10 +106,10 @@ export default function Provider({ children }) {
     if (name === 'ComparisonFilter') setComparisonFilter(value);
   };
 
-  const handleClick = () => {
+  const handleClick = ({ target: { name } }) => {
     setFilters((prevState) => ({
       ...prevState,
-      filterByNumericValues: [
+      filterByNumericValues: name === 'remove-filters' ? [] : [
         ...prevState.filterByNumericValues,
         {
           column: columnFilter,
@@ -122,6 +122,15 @@ export default function Provider({ children }) {
     if (optionsColumnFilter[1]) setColumnFilter(optionsColumnFilter[1]);
   };
 
+  const handleClickRemoveFilter = ({ name }) => {
+    setFilters((prevState) => ({
+      ...prevState,
+      filterByNumericValues: [
+        ...prevState.filterByNumericValues.filter(({ column }) => column !== name),
+      ],
+    }));
+  };
+
   const context = {
     planets,
     filteredPlanets,
@@ -132,7 +141,9 @@ export default function Provider({ children }) {
     inputValue,
     optionsColumnFilter,
     optionsComparisonFilter,
-    filters,
+    filters, // remover antes do push
+    handleClickRemoveFilter,
+    filterByNumericValues: filters.filterByNumericValues,
   };
 
   return (

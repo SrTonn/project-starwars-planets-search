@@ -11,6 +11,8 @@ export default function Main() {
     inputValue,
     optionsColumnFilter,
     optionsComparisonFilter,
+    handleClickRemoveFilter,
+    filterByNumericValues,
   } = useContext(Context);
 
   return (
@@ -39,13 +41,36 @@ export default function Main() {
           value={ inputValue }
         />
         <button
+          name="filter"
           type="button"
-          onClick={ handleClick }
+          onClick={ (e) => handleClick(e) }
           data-testid="button-filter"
         >
           FILTRAR
         </button>
+        <button
+          name="remove-filters"
+          type="button"
+          onClick={ (e) => handleClick(e) }
+          data-testid="button-remove-filters"
+        >
+          REMOVER FILTROS
+        </button>
       </div>
+
+      {filterByNumericValues.map(({ column, comparison, value }) => (
+        <div key={ column } data-testid="filter">
+          {`${column} ${comparison} ${value}`}
+          <button
+            type="button"
+            name={ column }
+            onClick={ ({ target }) => handleClickRemoveFilter(target) }
+          >
+            ❌
+          </button>
+        </div>
+      ))}
+
       <Table />
     </>
   );
