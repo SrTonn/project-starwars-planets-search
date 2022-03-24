@@ -9,8 +9,7 @@ const INITIAL_FILTER_BY_NAME = {
 };
 
 const INITIAL_FILTER_BY_NUMERIC_VALUES = {
-  filterByNumericValues: [
-  ],
+  filterByNumericValues: [],
 };
 
 const INITIAL_ORDER = {
@@ -63,21 +62,17 @@ export default function Provider({ children }) {
   }, []);
 
   useEffect(() => {
-    const valueName = filters.filterByName.name.toLowerCase();
-    setFilteredPlanets(planets
-      .filter(({ name }) => name.toLowerCase().includes(valueName)));
+    const search = filters.filterByName.name.toLowerCase();
+    setFilteredPlanets(planets.filter((obj) => obj.name.toLowerCase().includes(search)));
 
     if (filters.filterByNumericValues.length > 0) {
       filters.filterByNumericValues.forEach((elements) => {
-        setFilteredPlanets((prevState) => {
-          const temp = prevState.filter((obj) => {
-            const { comparison, value: numericValue, column } = elements;
-            if (comparison === 'maior que') return +obj[column] > +numericValue;
-            if (comparison === 'menor que') return +obj[column] < +numericValue;
-            return numericValue === obj[column];
-          });
-          return [...temp];
-        });
+        setFilteredPlanets((prevState) => prevState.filter((obj) => {
+          const { comparison, value: numericValue, column } = elements;
+          if (comparison === 'maior que') return +obj[column] > +numericValue;
+          if (comparison === 'menor que') return +obj[column] < +numericValue;
+          return numericValue === obj[column];
+        }));
       });
     }
   }, [filters, planets]);
@@ -93,12 +88,9 @@ export default function Provider({ children }) {
     setFilteredPlanets((prevState) => {
       if (prevState.length === 0) return prevState;
       const sorted = prevState.sort((a, b) => (
-        sort === 'ASC'
-          ? a[column].localeCompare(b[column], 'en', { numeric: true })
+        sort === 'ASC' ? a[column].localeCompare(b[column], 'en', { numeric: true })
           : b[column].localeCompare(a[column], 'en', { numeric: true })
       ));
-      console.log('el=>', sorted[0][column]);
-      console.log('isNaN=>', Number.isNaN(Number(sorted[0][column])));
       while (Number.isNaN(Number(sorted[0][column]))) {
         sorted.push(sorted.shift());
       }
@@ -108,19 +100,13 @@ export default function Provider({ children }) {
   // Ref.: https://stackoverflow.com/questions/4340227/sort-mixed-alpha-numeric-array
   // Ref².: https://stackoverflow.com/questions/24909371/move-item-in-array-to-last-position
 
+  const changeFilter = (state) => setFilters((prevState) => ({ ...prevState, ...state }));
+
   const handleChange = ({ target: { value, name } }) => {
     if (name === 'sort') {
       setSelectOrder(value);
-    } else if (value) {
-      setFilters((prevState) => ({
-        ...prevState,
-        filterByName: { name: value },
-      }));
     } else {
-      setFilters((prevState) => ({
-        ...prevState,
-        filterByName: { name: '' },
-      }));
+      changeFilter({ filterByName: { name: value || '' } });
     }
   };
 
@@ -132,37 +118,32 @@ export default function Provider({ children }) {
 
   const handleClick = ({ target: { name } }) => {
     if (name === 'sort-planets') {
-      setFilters((prevState) => ({
-        ...prevState,
+      changeFilter({
         order: {
           column: selectOrderColumn,
           sort: selectOrder,
         },
-      }));
+      });
     } else {
-      setFilters((prevState) => ({
-        ...prevState,
+      changeFilter({
         filterByNumericValues: name === 'remove-filters' ? [] : [
-          ...prevState.filterByNumericValues,
+          ...filters.filterByNumericValues,
           {
             column: columnFilter,
             comparison: comparisonFilter,
             value: inputValue,
           },
         ],
-      }));
+      });
 
       if (optionsColumnFilter[1]) setColumnFilter(optionsColumnFilter[1]);
     }
   };
 
   const handleClickRemoveFilter = ({ name }) => {
-    setFilters((prevState) => ({
-      ...prevState,
-      filterByNumericValues: [
-        ...prevState.filterByNumericValues.filter(({ column }) => column !== name),
-      ],
-    }));
+    changeFilter({ filterByNumericValues: [
+      ...filters.filterByNumericValues.filter(({ column }) => column !== name),
+    ] });
   };
 
   const context = {
@@ -175,7 +156,6 @@ export default function Provider({ children }) {
     inputValue,
     optionsColumnFilter,
     optionsComparisonFilter,
-    filters, // remover antes do push
     handleClickRemoveFilter,
     filterByNumericValues: filters.filterByNumericValues,
     INITIAL_OPTIONS_COLUMN_FILTER,
