@@ -87,13 +87,17 @@ export default function Provider({ children }) {
     const { column, sort } = filters.order;
     setFilteredPlanets((prevState) => {
       if (prevState.length === 0) return prevState;
+
       const sorted = prevState.sort((a, b) => (
-        sort === 'ASC' ? a[column].localeCompare(b[column], 'en', { numeric: true })
-          : b[column].localeCompare(a[column], 'en', { numeric: true })
+        a[column].localeCompare(b[column], 'en', { numeric: true })
       ));
+
+      if (sort === 'DESC') sorted.reverse();
+
       while (Number.isNaN(Number(sorted[0][column]))) {
         sorted.push(sorted.shift());
       }
+
       return sorted;
     });
   }, [filters.order]);
