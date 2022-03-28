@@ -83,6 +83,8 @@ export default function Provider({ children }) {
       .filter((column) => !columnsUsed.includes(column)));
   }, [filters.filterByNumericValues]);
 
+  useEffect(() => { setColumnFilter(optionsColumnFilter[0]); }, [optionsColumnFilter]);
+
   useEffect(() => {
     const { column, sort } = filters.order;
     setFilteredPlanets((prevState) => {
@@ -129,6 +131,7 @@ export default function Provider({ children }) {
         },
       });
     } else {
+      if (optionsColumnFilter.length === 0) return;
       changeFilter({
         filterByNumericValues: name === 'remove-filters' ? [] : [
           ...filters.filterByNumericValues,
@@ -139,8 +142,6 @@ export default function Provider({ children }) {
           },
         ],
       });
-
-      if (optionsColumnFilter[1]) setColumnFilter(optionsColumnFilter[1]);
     }
   };
 
